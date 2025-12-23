@@ -2,22 +2,41 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+# -----------------------------------------------------------
+# 修正後的 Matplotlib 中文顯示設定
+# -----------------------------------------------------------
 import matplotlib.font_manager as fm
 import os
+import requests
 
-# 1. 檢查字型檔是否存在，沒有的話就從網路下載 (使用 Noto Sans TC)
-font_path = 'NotoSansTC-Regular.otf'
-if not os.path.exists(font_path):
-    # 顯示下載訊息，避免以為當機
-    print(f"正在下載中文字型至 {font_path}，請稍候...") 
-    os.system(f'wget "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansTC-Regular.otf" -O {font_path}')
+# 設定字型檔名與下載網址 (改用 NotoSansCJKtc，這是繁體中文標準版)
+font_filename = 'NotoSansCJKtc-Regular.otf'
+font_url = 'https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Regular.otf'
 
-# 2. 告訴 Matplotlib 使用這個字型
-fm.fontManager.addfont(font_path)
-plt.rcParams['font.family'] = ['Noto Sans TC']
-plt.rcParams['axes.unicode_minus'] = False # 解決負號 '-' 顯示成方塊的問題
-# -----------------------------------------------------------
-# --- 設定頁面資訊 ---
+# 1. 檢查字型檔是否存在，沒有的話就下載
+if not os.path.exists(font_filename):
+    try:
+        print(f"正在下載中文字型：{font_filename} ...")
+        response = requests.get(font_url)
+        response.raise_for_status() # 檢查網址是否有效
+        with open(font_filename, 'wb') as f:
+            f.write(response.content)
+        print("下載成功！")
+    except Exception as e:
+        print(f"字型下載失敗：{e}")
+        # 如果下載失敗，可以嘗試使用備用方案或忽略，避免程式崩潰
+        pass
+
+# 2. 只有當字型檔真的存在時，才加入 Matplotlib
+if os.path.exists(font_filename):
+    fm.fontManager.addfont(font_filename)
+    # 設定字型 (注意：字型名稱通常是 Noto Sans CJK TC)
+    plt.rcParams['font.family'] = ['Noto Sans CJK TC']
+else:
+    print("⚠️ 警告：找不到中文字型，圖表文字可能會變成方塊。")
+
+plt.rcParams['axes.unicode_minus'] = False 
+
 st.set_page_config(
     page_title="地球物理大冒險：從地表到深部",
     page_icon="🌍",
