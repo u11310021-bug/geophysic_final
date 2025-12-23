@@ -2,7 +2,21 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.font_manager as fm
+import os
 
+# 1. 檢查字型檔是否存在，沒有的話就從網路下載 (使用 Noto Sans TC)
+font_path = 'NotoSansTC-Regular.otf'
+if not os.path.exists(font_path):
+    # 顯示下載訊息，避免以為當機
+    print(f"正在下載中文字型至 {font_path}，請稍候...") 
+    os.system(f'wget "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansTC-Regular.otf" -O {font_path}')
+
+# 2. 告訴 Matplotlib 使用這個字型
+fm.fontManager.addfont(font_path)
+plt.rcParams['font.family'] = ['Noto Sans TC']
+plt.rcParams['axes.unicode_minus'] = False # 解決負號 '-' 顯示成方塊的問題
+# -----------------------------------------------------------
 # --- 設定頁面資訊 ---
 st.set_page_config(
     page_title="地球物理大冒險：從地表到深部",
